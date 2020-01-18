@@ -1,5 +1,5 @@
 /* eslint comma-dangle: 0, no-console: 0, no-use-before-define: 0, no-param-reassign: 0 */
-/* global $, io, buffer, eccrypto */
+/* global $, io, eccrypto , moment */
 $(function () {
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
@@ -12,7 +12,7 @@ $(function () {
   // Initialize variables
   var $window = $(window);
   var $usernameInput = $('.usernameInput'); // Input for username
-  var $messages = $('.messages'); // Messages area
+  var $messages = $('#scroller-window'); // Messages area
   var $inputMessage = $('.inputMessage'); // Input message input box
 
   var $loginPage = $('.login.page'); // The login page
@@ -26,30 +26,29 @@ $(function () {
   var $currentInput = $usernameInput.focus();
 
   var socket = io();
-  
+
   const addParticipantsMessage = (data) => {
     var message = '';
     if (data.numUsers === 1) {
-      message += 'there\'s 1 participant';
+      message += 'You are the only person here';
     } else {
-      message += 'there are ' + data.numUsers + ' participants';
+      message += 'There are ' + data.numUsers + ' participants';
     }
     log(message);
   };
 
   // Sets the client's username
   const setUsername = () => {
-    username = cleanInput($usernameInput.val().trim());
+    $('#userlist .me').remove();
+    username = cleanInput($('#user-name').val().trim());
 
     // If the username is valid
     if (username) {
-      $loginPage.fadeOut();
-      $chatPage.show();
-      $loginPage.off('click');
-      $currentInput = $inputMessage.focus();
-
       // Tell the server your username
+      console.log('telling the server my new username...', username);
       socket.emit('add user', username);
+      $('#userlist').append('<a class="item me">' + username
+      + '<div class="ui small red label">&nbsp;<i class="ui icontext icon">X </i> PK</div></a>');
     }
   };
 
@@ -92,9 +91,10 @@ $(function () {
   };
 
   // Log a message
-  const log = (message, options) => {
-    var $el = $('<li>').addClass('log').text(message);
-    addMessageElement($el, options);
+  const log = (message) => {
+    var CurrentDate = moment().format();
+    var $el = $('<p>').addClass('log').text(CurrentDate + ' ' + message);
+    $('#status-log').append($el);
   };
 
   const isEphemeralMessage = (message) => {
@@ -299,16 +299,61 @@ $(function () {
     $inputMessage.focus();
   });
 
+  $('.dropdown').dropdown();
+  $('.item').tab();
+  $('.modal').modal({
+    onApprove: function () {
+      setUsername();
+    }
+  });
+
+  $('#menu-profile').click(function () {
+    $('.modal').modal('show');
+  });
+
+  log('Ready to connect');
+
+  $('#new-private-chat').click(function () {
+    $('.top').css('opacity', 0.2);
+    $('.ui.bottom.fixed .item').css('opacity', 0.2);
+    $('#public-chat').css('opacity', 0.2);
+    $('#userlist .item .red').parent().css('opacity', 0.2);
+    $('#cancel-new-private-chat').css('opacity', 1.0);
+    $('#cancel-new-private-chat').show();
+    $('#new-private-chat').hide();
+  });
+
+  $('#cancel-new-private-chat').click(function () {
+    $('.top').css('opacity', 1.0);
+    $('.ui.bottom.fixed .item').css('opacity', 1.0);
+    $('#public-chat').css('opacity', 1.0);
+    $('#userlist .item .red').parent().css('opacity', 1.0);
+    $('#new-private-chat').show();
+    $('#cancel-new-private-chat').hide();
+  });
+
+  $('#plug').click(function () {
+    if ($('#plug').hasClass('red')) {
+      log('Attempting to connect...');
+      socket.emit('reconnect');
+      $('#plug').removeClass('red'); // TODO: only when actually connected!
+      $('#plug').addClass('green'); // TODO: only when actually connected!
+    } else {
+      log('Attempting to disconnect...');
+      socket.emit('disconnect');
+      $('#plug').removeClass('green'); // TODO: only when actually disconnected!
+      $('#plug').addClass('red'); // TODO: only when actually disconnected!
+    }
+  });
+
   // Socket events
 
   // Whenever the server emits 'login', log the login message
   socket.on('login', (data) => {
     connected = true;
     // Display the welcome message
-    var message = "Welcome to QRL Ephemeral Test Chat – ";
-    log(message, {
-      prepend: true
-    });
+    var message = 'Connected to theqrl.org core dev team QRL Ephemeral Test Chat';
+    log(message);
     addParticipantsMessage(data);
   });
 
@@ -319,6 +364,10 @@ $(function () {
 
   // Whenever the server emits 'user joined', log it in the chat body
   socket.on('user joined', (data) => {
+    console.log('user joined, data is:');
+    console.log(data);
+    $('#userlist').append('<a class="item them">' + data.username
+      + '<div class="ui small red label">&nbsp;<i class="ui icontext icon">X </i> PK</div></a>');
     log(data.username + ' joined');
     addParticipantsMessage(data);
   });
@@ -341,11 +390,13 @@ $(function () {
   });
 
   socket.on('disconnect', () => {
-    log('you have been disconnected');
+    log('Disconnected');
+    $('#userlist .me').remove();
+    $('#userlist .them').remove();
   });
 
   socket.on('reconnect', () => {
-    log('you have been reconnected');
+    log('You have been connected');
     if (username) {
       socket.emit('add user', username);
     }
@@ -354,5 +405,4 @@ $(function () {
   socket.on('reconnect_error', () => {
     log('attempt to reconnect has failed');
   });
-
 });

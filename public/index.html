@@ -3,10 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <title>QRL Ephemeral Chat PoC</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hack-font/3.003/web/hack.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <ul class="pages">
+  <div class="ui basic modal">
+    <div class="ui icon header">
+      <i class="user icon"></i>
+      Profile
+    </div>
+    <div class="content">
+      <form class="ui inverted form">
+    <div class="field">
+      <label>Username</label>
+      <input type="text" name="user-name" id="user-name" placeholder="Username">
+    </div>
+    <div class="field">
+      <label class="ui">QRL address &nbsp;&nbsp;<small>Optional for public chat, required for private chat</small></label>
+      <input type="text" name="qrl-address" placeholder="QRL address">
+    </div>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+      <div class="ui green ok inverted button">
+        <i class="checkmark icon"></i>
+        OK
+      </div>
+    </div>
+  </div>
+  <div class="ui row">
+    <div class="ui top attached menu">
+      <a class="active red icon item" id="plug"><i class="plug icon"></i></a>
+    <div class="ui dropdown icon item">
+      <i class="wrench icon"></i>
+      <div class="menu">
+        <div class="item" id="menu-profile">
+          Profile...
+        </div>
+        <div class="item">
+          Private keys file...
+        </div>
+        <div class="divider"></div>
+        <div class="header">
+          Network
+        </div>
+        <div class="item disabled">
+          Connect
+        </div>
+        <div class="item disabled">
+          Disconnect
+        </div>
+      </div>
+    </div>
+      <div class="header item">QRL Ephemeral Chat</div>
+      <div class="item">Public</div>
+  </div>
+  <div class="ui bottom attached segment">
+  <div class="ui grid">
+      <div class="left floated left aligned column" id="scroller-window">
+        <div class="ui tab active" data-tab="tab-status" id="status-log">
+        </div>
+        <div class="ui tab" data-tab="tab-public" id="public-chat">Hello</div>
+    </div>
+    <div class="right floated left aligned column">
+      <div class="ui vertical menu" id="userlist">
+        <!-- <a class="item">JP <div class="ui small green label"><i class="ui check icon"></i> PK</div></a>
+    <a class="item">Jackalyst <div class="ui small green label"><i class="ui check icon"></i> PK</div></a>
+    <a class="item">Adem <div class="ui small red label">&nbsp;<i class="ui icontext icon">X </i> PK</div></a> -->
+  </div>
+    </div>
+  </div>
+    </div>
+    </div>
+  <div class="ui bottom fixed tabular menu">
+    <a class="active item" data-tab="tab-status">
+      <i class="ui plug icon"></i>
+      Status
+    </a>
+    <a class="item" data-tab="tab-public">
+      Public
+    </a>
+    <a class="item">
+      <i class="ui lock icon"></i>Jackalyst
+    </a>
+    <a class="item">
+      <i class="ui lock icon"></i>Adem
+    </a>
+    <div class="right menu">
+      <a class="item" id="new-private-chat">
+        <i class="add icon"></i> New Private Chat
+      </a>
+      <a class="item" id="cancel-new-private-chat" style="display: none;">
+        <i class="close icon"></i> Cancel
+      </a>
+    </div>
+  <ul class="pages" style="display: none;">
     <li class="chat page">
       <div class="keys">
         <h4>Ephemeral secret keys <button id="clearS">Clear</button></h4>
@@ -37,7 +132,9 @@
   </ul>
 
   <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="/qrl.js"></script>
   <script src="/buffer.js"></script>
   <script src="/main.js"></script>
